@@ -75,11 +75,14 @@
 이에 대해 상세 설명은 다음을 참조하면 된다. 
 
 [link Saga 개발 가이드](./docs/SAGA.README.md)
-- [link Saga Orchestrator 참조 코드](./saga-orchestrator)
-- [link Saga Participant 참조 코드](./saga-consumer)
+- [Saga Orchestrator 샘플 코드](./saga-orchestrator)
+- [Saga Participant(Customer/Payment) 샘플 코드](./saga-consumer)
+- [Saga Participant(Ticket) 샘플 코드](./saga-ticket-consumer)
+- [Saga Kafka Connector 설정 코드](./connectors/saga-outbox-connector)
 
-[link CQRS 개발 가이드](./docs/CQRS.README.md)
-- [link CQRS Consumer Streams 참조 코드](./cqrs-consumer-streams)
+[CQRS 개발 가이드](./docs/CQRS.README.md)
+- [CQRS Consumer Streams 샘플 코드](./cqrs-consumer-streams)
+- [CQRS Kafka Connector 설정 코드](./connectors/cqrs-cdc-connector)
  
 
 

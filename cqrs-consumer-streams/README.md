@@ -20,7 +20,7 @@ CQRS를 구성하기 위한 방식은 2가지로 나눠서 볼 수 있다.
 ### **CDC-Based CQRS**
 
 
-![alt_text](images/cdc-based-cqrs.png "image_tooltip")
+![alt_text](../docs/images/cdc-based-cqrs.png "image_tooltip")
 
 
 이 방식은 Source DB에서의 Domain Entity 변화를 인지해서 Sink DB에 동일하게 상태 변화를 복제하는 방식이다.
@@ -265,7 +265,7 @@ CQRS를 구성하기 위한 방식은 2가지로 나눠서 볼 수 있다.
 
 
 
-![alt_text](images/consumer-streams-cqrs.png "image_tooltip")
+![alt_text](../docs/images/consumer-streams-cqrs.png "image_tooltip")
 
 
 이방식은 앞서 CDC 기능 구조에 Kafka 내부에서 Streams 를 별도로 구성하여 Source Topic ({ProjectName}.{AggregateType}, 예) MyProject.PurchaseOrder)으로 부터 Record를 읽어 들여, 자체적으로 데이터를 Transform, Join, Merging 한 후 그 결과를 Sink Topic({ProjectName}.stream.{AggregateType}, 예) MyProject.stream.PurchaseOrder)으로 producing하는 과정이 추가되어 있다.

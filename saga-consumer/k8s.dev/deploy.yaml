@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: mydev-ywyi
+  name: saga-consumers-deploy
+  labels:
+    app: saga-consumers
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: saga-consumers
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8081'
+        prometheus.io/path: '/actuator/prometheus'
+      labels:
+        app: saga-consumers
+    spec:
+      containers:
+      - name: saga-consumers
+        image: eks-dev-zdb-registry.cloudzcp.io/mydev-ywyi/saga-consumers:1.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        - containerPort: 8081
+        volumeMounts:
+          - name: saga-consumers-config
+            mountPath: "/config"
+            readOnly: true
+      imagePullSecrets:
+        - name: harbor-registry-secret
+      volumes:
+        - name: saga-consumers-config
+          configMap:
+            name: saga-consumers-config
+            items:
+              - key: "application.yaml"
+                path: "application.yaml"
+              - key: "logback.xml"
+                path: "logback.xml"

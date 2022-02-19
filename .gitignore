@@ -1,0 +1,15 @@
+target/
+
+*.class
+
+*.jar
+
+.git
+
+applicaiton.yaml
+
+
+.idea
+
+.DS_Store
+*.iml

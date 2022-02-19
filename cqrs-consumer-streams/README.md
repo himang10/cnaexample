@@ -803,7 +803,7 @@ Json 구조로 변환 후 이를 Kafka Record로 전달하며 이는 Kafka Sink 
 특히 여러 Source DB로 부터 데이터 변화를 수집하여 Merging 후 새로운 View로 Sink DB로 관리하고자 할 경우 유용하다. 다음은 Mering에 대한 예시 흐름도이다.
 
 
-![alt_text](images/StreamMerging.Joins.png "image_tooltip")
+![alt_text](../docs/images/StreamMerging.Joins.png "image_tooltip")
 
 
 Source DB 1과 Source DB2 에서 발생하는 데이터를 Merged Data로 변환하여 새로운 View를 생성하기 위한 구조의 예시이다.

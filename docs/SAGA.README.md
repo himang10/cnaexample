@@ -58,8 +58,8 @@ Saga Connector는 database 별로 한개씩 생성해야 한다. 예를들어, m
     "name": "mariadb-json-request-saga",
     "config": {
         "connector.class": "io.debezium.connector.mysql.MySqlConnector",
-        "database.hostname": "a77af7a1caaaf4d84a206b39779ef098-c3ca47260c19debc.elb.ap-northeast-2.amazonaws.com",
-        "database.user": "admin",
+        "database.hostname": "xxx",
+        "database.user": "xxx",
         "database.password": "xxxx",
         "database.server.id": "6275",
         "database.history.kafka.bootstrap.servers": "mydev-db-mytest-kafka.mydev-db:9092",

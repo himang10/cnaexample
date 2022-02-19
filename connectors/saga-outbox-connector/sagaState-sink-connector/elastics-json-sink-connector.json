@@ -1,0 +1,22 @@
+{
+  "name": "elastics-json-sink-sagastate",
+  "config": {
+    "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
+    "task.max": "1",
+    "connection.url": "http://elasticsearch.zcp-system:9200",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "true",
+    "delete.enabled": "true",
+    "topics.regex": "(.*)SagaState",
+    "tombstones.on.delete" : "true",
+    "transforms": "unwrap,route",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "true",
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+    "transforms.route.replacement": "$2.$3",
+    "behavior.on.null.values": "delete",
+    "type.name": "_doc"
+  }
+}

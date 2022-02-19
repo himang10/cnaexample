@@ -1,0 +1,37 @@
+{
+  "name": "mariadb-sink",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "task.max": "1",
+    "connection.url": "jdbc:mariadb://xxx/test",
+    "connection.user": "xxx",
+    "connection.password": "xxx",
+    "auto.create": "true",
+    "auto.evolve": "true",
+    "key.converter": "io.confluent.connect.avro.AvroConverter",
+    "key.converter.schema.registry.url": "http://schema-registry-service:8080",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter.schema.registry.url": "http://schema-registry-service:8080",
+    "key.converter.schemas.enable": "true",
+    "value.converter.schemas.enable": "true",
+    "pk.mode": "record_key",
+    "insert.mode": "upsert", 
+    "delete.enabled": "true",
+    "topics.regex": "mydev-db.mydev-db.(.*)",
+    "table.name.format": "${topic}",
+    "tombstones.on.delete" : "true",
+    "transforms": "unwrap,route,ReplaceField,InsertField",
+    "transforms.ReplaceField.type" : "org.apache.kafka.connect.transforms.ReplaceField$Value",
+    "transforms.ReplaceField.blacklist" : "__deleted",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "true",
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+    "transforms.route.replacement": "$3",
+
+    "transforms.InsertField.type" : "org.apache.kafka.connect.transforms.InsertField$Value",
+    "transforms.InsertField.static.field" : "type",
+    "transforms.InsertField.static.value" : "CQRS"
+
+  }
+}

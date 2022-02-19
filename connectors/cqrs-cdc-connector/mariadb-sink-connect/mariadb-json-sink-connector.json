@@ -1,0 +1,34 @@
+{
+  "name": "mariadb-json-sink-cqrs",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "task.max": "1",
+    "connection.url": "jdbc:mariadb://xxx/test",
+    "connection.user": "xxx",
+    "connection.password": "xxx",
+    "auto.create": "false",
+    "auto.evolve": "true",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "true",
+    "value.converter.schemas.enable": "true",
+    "pk.mode": "record_key",
+    "insert.mode": "upsert", 
+    "delete.enabled": "true",
+    "topics.regex": "MyProject.stream.(.*)",
+    "table.name.format": "${topic}",
+    "tombstones.on.delete" : "true",
+    "transforms": "unwrap,route,ReplaceField,InsertField",
+    "transforms.ReplaceField.type" : "org.apache.kafka.connect.transforms.ReplaceField$Value",
+    "transforms.ReplaceField.blacklist" : "",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "true",
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+    "transforms.route.replacement": "$3",
+
+    "transforms.InsertField.type" : "org.apache.kafka.connect.transforms.InsertField$Value",
+    "transforms.InsertField.static.field" : "type",
+    "transforms.InsertField.static.value" : "cqrs"
+  }
+}

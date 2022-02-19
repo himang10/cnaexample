@@ -1,0 +1,27 @@
+{
+  "name": "mongo-json-sink-stream-cqrs",
+  "config": {
+    "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+    "connection.uri": "mongodb://xxx:xxx@xxx:27017/?authSource=admin",
+    "database": "mydev-db",
+    "topics": "MyProject.stream.MergedData",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "true",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "true",
+    "tombstones.on.delete" : "true",
+    "delete.on.null.values": "true",
+    "document.id.strategy.overwrite.existing": "true",
+    "document.id.strategy":"com.mongodb.kafka.connect.sink.processor.id.strategy.ProvidedInKeyStrategy",
+
+    "transforms": "ReplaceField,InsertField,hk",
+    "transforms.ReplaceField.type" : "org.apache.kafka.connect.transforms.ReplaceField$Value",
+    "transforms.ReplaceField.blacklist" : "",
+    "transforms.InsertField.type" : "org.apache.kafka.connect.transforms.InsertField$Value",
+    "transforms.InsertField.static.field" : "type",
+    "transforms.InsertField.static.value" : "CQRS",
+    "transforms.hk.type":"org.apache.kafka.connect.transforms.HoistField$Key",
+    "transforms.hk.field":"_id",
+    "writemodel.strategy": "com.mongodb.kafka.connect.sink.writemodel.strategy.UpdateOneBusinessKeyTimestampStrategy"
+  }
+}

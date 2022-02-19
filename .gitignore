@@ -2,6 +2,8 @@ target/
 
 *.class
 
+*.jar
+
 application.yaml
 
 

@@ -1,5 +1,8 @@
 target/
 
+out/
+
+
 *.class
 
 *.jar

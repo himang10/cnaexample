@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: mydev-ywyi
+  name: saga-orchestrators-deploy
+  labels:
+    app: saga-orchestrators
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: saga-orchestrators
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8081'
+        prometheus.io/path: '/actuator/prometheus'
+      labels:
+        app: saga-orchestrators
+    spec:
+      containers:
+      - name: saga-orchestrators
+        image: eks-dev-zdb-registry.cloudzcp.io/mydev-ywyi/saga-orchestrators:1.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        - containerPort: 8081
+        volumeMounts:
+          - name: saga-orchestrators-config
+            mountPath: "/config"
+            readOnly: true
+      imagePullSecrets:
+      - name: harbor-registry-secret
+      volumes:
+        - name: saga-orchestrators-config
+          configMap:
+            name: saga-orchestrators-config
+            items:
+              - key: "application.yaml"
+                path: "application.yaml"
+              - key: "logback.xml"
+                path: "logback.xml"

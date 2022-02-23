@@ -5,17 +5,30 @@
 ## **Overview**
 
 
-본 가이드는 CNAData 프레임워크 기반으로 Cqrs Consumer Stream Service를 개발하기 위한 가이드를 제공한다
+본 가이드는 Order Service에서 사용하고 있는 PurchaseOrder Entity (Table) 의 Row 생성 및 업데이트, 삭제 상태 변화를 실시간으로 수집하여 Sink Service의 DB에 동기화하기 위한 방법을 설명한다.
 
-본 가이드는 PurchaseOrder Service에서 사용하고 있는 PurchaseOrder Entity (Table) 의 Row 생성 및 업데이트, 삭제 상태 변화를 실시간으로 수집하여 Sink Service의 DB에 동기화하는 방식에 대한 설명한다.
+```
+❈ 고려 사항
+본 가이드는 Kafka/Kafka Connect with Debezium을 이용하여 아키텍처를 구성하고 있으며, 
+spring boot 기반으로 CQRS Consumer Streams를 구성을 쉽게 하기 위해 자체 개발된 
+CNAData Framework의 “cnadata-producer-lib.jar”와 “cnadata-consumer-lib.jar”를 활용하였다. 
+개념에 대한 이해를 위해 활용하고 있으며, 실제 프로젝트 수행 시 다른 프레임워크 또는 언어 등의 환경 구성을 하고자 하는 경우  
+여기서 정의하고 있는 구조에 따라 자체적으로 개발하여 구성할 필요가 있다
 
-여기서는 Kafka Connect를 활용하는 경우 CDC 기반 구성 시 Source DB Table의 변화를 Sink DB Table에 단순히 동기화하는 구조에 추가적으로 Sink DB Table에 대해 다양한 View를 구성하는 것에 대해 설명한다.
-
+```
 
 ## **CQRS 구성 아키텍처 정의**
 
 
-CQRS를 구성하기 위한 방식은 2가지로 나눠서 볼 수 있다.
+본 가이드에서 제시하는 CQRS를 구성하기 위한 방식은 크게 2가지로 나눠서 정의한다.
+
+* CDC-based CQRS
+* CQRS Consumer Streams를 이용한 CQRS
+
+"CDC-based CQRS"는 Source 데이터의 변화를 실시간을 감지하여 다양한 유형의 DB내 Sink 데이터에 그대로 복제하는 개념이다. 이것은 단순 복제 개념이며, 일부 컬럼의 추가 및 조정은 가능하지만 완전히 다른 데이터 구조나 데이터 Merging은 처리 할 수 없다. 대신 이것은 별도의 개발이 필요하지 않다.
+
+반면, "CQRS Consumer Streams" "는 데이터가 Kafka를 통해 전달되는 과정에서 사용자 개입을 통해 다른 유형의 데이터 구조로 전환하거나 Merging할 수 있도록 지원하여 Sink DB 내에 서비스가 필요로 하는 데이터 구조로 바꿀 수 있다. 대신 별도의 개발이 필요하다.
+이것에 대한 상세한 내용은 다음 장을 참조하자.
 
 ### **CDC-Based CQRS**
 
@@ -257,7 +270,7 @@ CQRS를 구성하기 위한 방식은 2가지로 나눠서 볼 수 있다.
 </table>
 
 
-### **CQRS Customer Stream Service 를 이용한 CQRS**
+### **CQRS Consumer Streams Service 를 이용한 CQRS**
 
 앞서 언급한 CDC 기반 구조는 단지 데이터를 동기화하는 것에 목표를 두고 있다면, 이 방식은 다음과 같이 Stream 상에서 별도 처리를 개발하여 다양한 View를 구성하도록 지원한다.
 

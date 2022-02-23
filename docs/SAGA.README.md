@@ -4,29 +4,46 @@ Saga 개발 가이드
 ## **Overview**
 
 
-본 가이드는 CNAData 프레임워크 기반으로 Saga Orchestrator 및 Saga Participant service를 개발하기 위한 가이드를 제공한다
-
-본 가이드는 주문 서비스 흐름에서 주문을 실행하는 Order Service, 고객 정보를 검색하는 Customer service 그리고 카드 번호를 조회하는 Payment Service를 기반으로 Saga를 구성하고 실행하는 것을 전제로 설명한다.
+본 가이드는 Kafka & Kafka Connect를 활용한 Outbox Pattern 기반의 Saga Orchestrator 및 Saga Participant service를 개발하기 위한 가이드를 제공한다
+본 가이드는 주문 서비스 흐름에서 주문을 실행하는 Order Service, 고객 정보를 검색하는 Customer service, Ticket 발급을 위한 Ticket Service 그리고 카드 결제를 위한 Payment Service를 기반으로 Saga를 구성하고 있다
 
 참고
-
-
 
 * Saga Orchestrator: Saga 전체를 Orchestrator하는 조율자 서비스
 * Participant: 분산 환경에서 Global Transaction에 참여하는 Saga 참여자 서비스
 
+```
+❈ 고려 사항
+
+여기서 제공하는 구조는 Kafka/Kafka Connect with Debezium을 이용하여 아키텍처를 구성하고 있으며, 
+spring boot 기반으로 Saga Orchestrator와 Participant를 구성을 쉽게 하기 위해 
+자체 개발된 CNAData Framework의 “cnadata-producer-lib.jar”와 “cnadata-consumer-lib.jar”를 활용하였다. 
+개념에 대한 이해를 위해 활용하고 있으며, 실제 프로젝트 수행 시 다른 프레임워크 또는 언어 등의 환경 구성을 하고자 하는 경우  
+여기서 정의하고 있는 구조에 따라 자체적으로 개발하여 구성할 필요가 있다
+```
 
 ## **전제 조건**
 
 
 여기서 기술하는 Saga 구성은 Kafka와 Outbox & CDC 구성을 위한 Debezium based Source Kafka Connector, Sink Kafka Connector를 기반으로 구성되어 있다.
 
+또한, Saga 서비스를 구성하기 위해서는 개별 서비스의 Domain Entity와 Domain Event를 단일 트랜잭션으로 동작하도록 하기 위해 Outbox Pattern을 적용하고 있다.
+
+이를 기반으로 전체 Saga의 조율자 역할을 수행하는 조율 서비스는 Saga Orchestrator 역할을 수행하기 위해 트랜잭션 보장을 위한 Outbox Pattern을 적용해야 하는데 이를 위해 본 가이드에서는 MariaDB 를 이용하고 있다.
+
+아래 Saga 흐름은 주문 처리를 위한 Saga 흐름을 표현하고 있다.
+
 ![alt_text](images/saga.png "image_tooltip")
 
+Client가 주문을 위해 Order, Customer, Payment 서비스가 단일 트랜잭션 내에서 협동을 통해 처리를 수행하고 주문 처리 결과를 client에 전달 해야 하는데 이를 위해 각 서비스 내 처리되는 Domain Entity의 변경과 각 서비스간 메시지 간의 트랜잭션을 보장할 수 있도록 Outbox Pattern을 적용하게 된다.
+이 구조는 각 개별 서비스가 처리 요청 및 그 결과 메시지인 Domain Event를 직접 Message로 만들어서 Kafka로 전달하는 구조가 아닌 RDB + Kafka Connector를 이용한 Domain Entity와 Domain Event 가 단일 트랜잭션으로 구성될 수 있도록 지원하는 것이 핵심이다.
+또한 개별 서비스 내 처리되는 Saga 정보 관리 구조를 Stateless 구조로 동작하게 함으로써 참여 서비스 가 비정상적인 처리 및 장애 발생하더라도 트랜잭션이 보장 가능하도록 구성한다.
 
-Orchestrator 역할을 수행할 시 Transactional Message인 Outbox Pattern을 적용하게 되는데 이를 위해 DB는 Local Transaction을 보장하는 RDB를 사용해야 한다.
-
-여기서는 MariaDB를 이용해서 Source를 구성하며, 각 Participant는 Kafka와 연동하여 트랜잭션 처리를 수행하게 된다.
+```
+❈ 고려 사항
+트랜잭션과 Stateless를 보장할 수 있도록 하기 위해 현재는 RDB를 활용해야 한다. 
+그러나, 성능 등을 고려할 경우에는 실제 구성 시 트랜잭션을 보장하는 In-Memory DB를 고려해 볼 수 있다
+```
 
 
 ## **Saga를 위한 Kafka Connector 설정하기**
@@ -170,9 +187,14 @@ Saga Connector는 database 별로 한개씩 생성해야 한다. 예를들어, m
 
 
 ```
-❊ **주의 사항**
+❊ 주의 사항
 
-기본적으로 database.include.list는 database 를 한개 이상 등록할 수 있다. 이렇게 함으로써 하나의 Kafka Connector를 등록하여 여러 database의 변화를 수집하고 처리할 수 있다. 그러나, database를 삭제 및 재 등록하는 경우 기존 데이터(Offset 등)가 완전하게 삭제 될 수 없게 되면서 비정상적으로 동작할 가능성이 있다. 또한 Order Issue를 해소하기 위해 기본 Task를 1로 설정하게 되는데 이로 인해 여러 Database를 등록하는 경우 성능적인 문제도 야기 될 수있다. 그러므로 작성 시  database 당  한개의 Kafka Connector를 등록 관리하는 것을 권고 한다. 또한 신규 생성 시 동일 이름을 사용하여 재 생성하지 말고 Random HashCode를 붙여서 관리하는 것을 권고한다.
+기본적으로 database.include.list는 database 를 한개 이상 등록할 수 있다. 
+이렇게 함으로써 하나의 Kafka Connector를 등록하여 여러 database의 변화를 수집하고 처리할 수 있다. 
+그러나, database를 삭제 및 재 등록하는 경우 기존 데이터(Offset 등)가 완전하게 삭제 될 수 없게 되면서 비정상적으로 동작할 가능성이 있다. 
+또한 Order Issue를 해소하기 위해 기본 Task를 1로 설정하게 되는데 이로 인해 여러 Database를 등록하는 경우 성능적인 문제도 야기 될 수있다. 
+그러므로 작성 시  database 당  한개의 Kafka Connector를 등록 관리하는 것을 권고 한다. 
+또한 신규 생성 시 동일 이름을 사용하여 재 생성하지 말고 Random HashCode를 붙여서 관리하는 것을 권고한다.
 ```
 
 
